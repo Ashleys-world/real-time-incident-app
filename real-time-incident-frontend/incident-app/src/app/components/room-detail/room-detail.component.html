@@ -1,0 +1,83 @@
+<div class="room-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a class="back-link" routerLink="/rooms">← Rooms</a>
+    </div>
+
+    <div *ngIf="room() as r" class="room-info">
+      <div class="room-meta">
+        <span class="sev-badge sev-{{r.severity.toLowerCase()}}">{{ r.severity }}</span>
+        <span class="status-badge">{{ r.status }}</span>
+      </div>
+      <h2 class="room-name">{{ r.title }}</h2>
+      <p class="room-desc" *ngIf="r.description">{{ r.description }}</p>
+    </div>
+
+    <div class="presence-section">
+      <h4>Online ({{ onlineUsers().length }})</h4>
+      <ul class="presence-list">
+        <li *ngFor="let u of onlineUsers()" class="presence-user">
+          <span class="avatar">{{ u.displayName[0] }}</span>
+          {{ u.displayName }}
+          <span *ngIf="u.userId === currentUserId" class="you-tag">you</span>
+        </li>
+      </ul>
+      <p *ngIf="onlineUsers().length === 0" class="empty-presence">No one online yet</p>
+    </div>
+  </aside>
+
+  <!-- Chat area -->
+  <main class="chat-area">
+    <div class="chat-header">
+      <span *ngIf="room() as r">{{ r.title }}</span>
+      <div class="error-msg" *ngIf="error()">{{ error() }}</div>
+    </div>
+
+    <div class="messages-container">
+      <div class="loading-msg" *ngIf="loading()">Loading history...</div>
+
+      <ng-container *ngFor="let msg of messages()">
+        <!-- System message -->
+        <div *ngIf="msg.messageType === 'system'" class="system-message">
+          {{ msg.content }}
+        </div>
+
+        <!-- User message -->
+        <div *ngIf="msg.messageType === 'user'" class="message-row"
+             [class.own]="isOwnMessage(msg)">
+          <div class="message-bubble">
+            <div class="message-meta">
+              <span class="sender">{{ isOwnMessage(msg) ? 'You' : msg.senderDisplayName }}</span>
+              <span class="time">{{ msg.sentAt | date:'HH:mm' }}</span>
+            </div>
+            <p class="message-content">{{ msg.content }}</p>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Typing indicator -->
+      <div *ngIf="typingUsers().length > 0" class="typing-indicator">
+        <span class="dots"><span></span><span></span><span></span></span>
+        {{ typingUsers().join(', ') }} {{ typingUsers().length === 1 ? 'is' : 'are' }} typing...
+      </div>
+
+      <div #chatEnd></div>
+    </div>
+
+    <!-- Message input -->
+    <div class="message-input-row">
+      <textarea
+        [(ngModel)]="messageInput"
+        (input)="onTyping()"
+        (keydown)="onKeydown($event)"
+        placeholder="Type a message... (Enter to send)"
+        rows="1"
+        class="message-input"
+      ></textarea>
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!messageInput.trim()">
+        Send
+      </button>
+    </div>
+  </main>
+</div>

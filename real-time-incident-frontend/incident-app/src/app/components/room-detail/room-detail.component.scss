@@ -1,0 +1,208 @@
+.room-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+  background: #0f172a;
+  color: #f1f5f9;
+  overflow: hidden;
+}
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+.sidebar {
+  background: #1e293b;
+  border-right: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+
+  .sidebar-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #334155;
+  }
+
+  .back-link {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.875rem;
+    &:hover { color: #f1f5f9; }
+  }
+}
+
+.room-info {
+  padding: 1.25rem;
+  border-bottom: 1px solid #334155;
+
+  .room-meta { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .room-name { font-size: 0.95rem; font-weight: 700; margin: 0 0 0.4rem; color: #f1f5f9; }
+  .room-desc { font-size: 0.8rem; color: #94a3b8; margin: 0; }
+}
+
+.presence-section {
+  padding: 1.25rem;
+  flex: 1;
+
+  h4 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #64748b; margin: 0 0 0.75rem; }
+}
+
+.presence-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.presence-user {
+  display: flex; align-items: center; gap: 0.6rem; font-size: 0.875rem; color: #cbd5e1;
+  .avatar { width: 24px; height: 24px; background: #0284c7; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+    font-weight: 700; color: #fff; flex-shrink: 0; text-transform: uppercase; }
+  .you-tag { font-size: 0.7rem; color: #64748b; background: #1e293b; padding: 0.1rem 0.4rem;
+    border-radius: 4px; margin-left: auto; }
+}
+
+.empty-presence { color: #64748b; font-size: 0.8rem; }
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+.chat-area {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 0.9rem 1.5rem;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  font-weight: 600;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.error-msg { color: #fca5a5; font-size: 0.85rem; margin-top: 0.25rem; }
+
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+}
+
+.loading-msg { color: #64748b; text-align: center; font-size: 0.875rem; }
+
+.system-message {
+  text-align: center;
+  color: #64748b;
+  font-size: 0.8rem;
+  padding: 0.25rem 0;
+  font-style: italic;
+}
+
+.message-row {
+  display: flex;
+  &.own { justify-content: flex-end; }
+}
+
+.message-bubble {
+  max-width: 65%;
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 0.65rem 0.9rem;
+
+  .own & {
+    background: #0c4a6e;
+  }
+
+  .message-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin-bottom: 0.25rem;
+  }
+
+  .sender { font-size: 0.75rem; font-weight: 600; color: #38bdf8; }
+  .time { font-size: 0.7rem; color: #64748b; }
+  .message-content { margin: 0; font-size: 0.9rem; color: #e2e8f0; line-height: 1.5; word-break: break-word; }
+}
+
+// ── Typing indicator ──────────────────────────────────────────────────────────
+.typing-indicator {
+  color: #94a3b8;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+}
+
+.dots {
+  display: flex;
+  gap: 3px;
+  span {
+    width: 5px;
+    height: 5px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-6px); }
+}
+
+// ── Input ──────────────────────────────────────────────────────────────────────
+.message-input-row {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: #1e293b;
+  border-top: 1px solid #334155;
+  flex-shrink: 0;
+}
+
+.message-input {
+  flex: 1;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  color: #f1f5f9;
+  padding: 0.6rem 0.9rem;
+  font-size: 0.9rem;
+  resize: none;
+  font-family: inherit;
+  line-height: 1.4;
+
+  &:focus { outline: none; border-color: #38bdf8; }
+}
+
+.send-btn {
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: flex-end;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) { background: #0369a1; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Severity / Status badges ───────────────────────────────────────────────────
+.sev-badge, .status-badge {
+  display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px;
+  font-size: 0.7rem; font-weight: 600;
+}
+.sev-p1 { background: #7f1d1d; color: #fca5a5; }
+.sev-p2 { background: #78350f; color: #fcd34d; }
+.sev-p3 { background: #1e3a5f; color: #7dd3fc; }
+.sev-p4 { background: #14532d; color: #86efac; }
+.status-badge { background: #1e293b; color: #94a3b8; border: 1px solid #334155; }

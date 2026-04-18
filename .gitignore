@@ -1,0 +1,42 @@
+# ========================
+# .NET / ASP.NET Core
+# ========================
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.DotSettings.user
+
+# Secrets — never commit these
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+# EF Core migrations snapshot conflicts — keep Migrations/ but ignore designer files optionally
+# *.Designer.cs  # uncomment if desired
+
+# ========================
+# Angular / Node
+# ========================
+node_modules/
+dist/
+.angular/
+*.js.map
+
+# ========================
+# DevOps / scripts
+# ========================
+.devops/*.env
+.devops/*.secret
+
+# ========================
+# OS / IDE
+# ========================
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/settings.json
+
+# SQLTools session files
+*.session.sql
