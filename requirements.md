@@ -412,3 +412,6 @@ A phase is considered complete when:
 4. SignalR hub methods are tested via a test client or Postman
 5. No known P1/P2 bugs outstanding
 6. README is updated with setup and run instructions for that phase
+
+ashley [ ~ ]$ bash /home/ashley/provision.sh
+Generated JWT secret (save this!): sJ29jciptJyTl5//DKD2rC3klJmiy6ZKYPQVruziAXZLplTLTYSM6VjeE4IlJdGU
