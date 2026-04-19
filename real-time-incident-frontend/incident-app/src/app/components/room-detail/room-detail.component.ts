@@ -1,5 +1,6 @@
 import {
-  Component, OnInit, OnDestroy, signal, ViewChild, ElementRef, AfterViewChecked
+  Component, OnInit, OnDestroy, signal, ViewChild, ElementRef,
+  AfterViewChecked, computed
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,26 +9,41 @@ import { Subscription } from 'rxjs';
 import { RoomService } from '../../services/room.service';
 import { SignalRService } from '../../services/signalr.service';
 import { AuthService } from '../../services/auth.service';
-import { ChatMessage, OnlineUser, RoomDetail } from '../../models/models';
+import { ToastService } from '../../services/toast.service';
+import { TaskBoardComponent } from '../task-board/task-board.component';
+import { ChatMessage, OnlineUser, RoomDetail, Task, ActivityEntry } from '../../models/models';
+
+type Tab = 'chat' | 'tasks' | 'activity';
 
 @Component({
   selector: 'app-room-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, TaskBoardComponent],
   templateUrl: './room-detail.component.html',
   styleUrls: ['./room-detail.component.scss']
 })
 export class RoomDetailComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('chatEnd') private chatEnd!: ElementRef;
+  @ViewChild('taskBoard') taskBoard!: TaskBoardComponent;
 
   roomId = '';
   room = signal<RoomDetail | null>(null);
   messages = signal<ChatMessage[]>([]);
   onlineUsers = signal<OnlineUser[]>([]);
   typingUsers = signal<string[]>([]);
+  tasks = signal<Task[]>([]);
+  activity = signal<ActivityEntry[]>([]);
   messageInput = '';
   error = signal('');
   loading = signal(true);
+  activeTab = signal<Tab>('chat');
+
+  readonly canEdit = computed(() => {
+    const room = this.room();
+    if (!room) return false;
+    const member = room.members.find(m => m.userId === this.currentUserId);
+    return member?.role === 'admin' || member?.role === 'responder';
+  });
 
   private subs: Subscription[] = [];
   private typingTimers = new Map<string, ReturnType<typeof setTimeout>>();
@@ -40,7 +56,8 @@ export class RoomDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
     private route: ActivatedRoute,
     private roomService: RoomService,
     public signalR: SignalRService,
-    public auth: AuthService
+    public auth: AuthService,
+    private toast: ToastService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -56,7 +73,14 @@ export class RoomDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
       next: msgs => { this.messages.set(msgs); this.shouldScroll = true; }
     });
 
-    // Connect and join room via SignalR
+    this.roomService.getTasks(this.roomId).subscribe({
+      next: tasks => this.tasks.set(tasks)
+    });
+
+    this.roomService.getActivity(this.roomId).subscribe({
+      next: entries => this.activity.set(entries)
+    });
+
     await this.signalR.connect();
     await this.signalR.joinRoom(this.roomId);
 
@@ -86,6 +110,25 @@ export class RoomDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
 
       this.signalR.roomStatusChanged$.subscribe(evt => {
         this.room.update(r => r ? { ...r, status: evt.newStatus } : r);
+        this.toast.info(`Room status changed to ${evt.newStatus}`);
+      }),
+
+      this.signalR.taskUpdated$.subscribe(task => {
+        this.tasks.update(tasks => {
+          const idx = tasks.findIndex(t => t.id === task.id);
+          if (idx >= 0) { const c = [...tasks]; c[idx] = task; return c; }
+          return [...tasks, task];
+        });
+        this.taskBoard?.applyExternalUpdate(task);
+      }),
+
+      this.signalR.taskDeleted$.subscribe(evt => {
+        this.tasks.update(tasks => tasks.filter(t => t.id !== evt.taskId));
+        this.taskBoard?.applyExternalDelete(evt.taskId);
+      }),
+
+      this.signalR.activityLogged$.subscribe(entry => {
+        this.activity.update(a => [...a, entry]);
       }),
 
       this.signalR.error$.subscribe(msg => this.error.set(msg))
@@ -99,10 +142,25 @@ export class RoomDetailComponent implements OnInit, OnDestroy, AfterViewChecked 
   }
 
   ngAfterViewChecked(): void {
-    if (this.shouldScroll) {
+    if (this.shouldScroll && this.activeTab() === 'chat') {
       this.scrollToBottom();
       this.shouldScroll = false;
     }
+  }
+
+  setTab(tab: Tab): void {
+    this.activeTab.set(tab);
+    if (tab === 'chat') setTimeout(() => this.scrollToBottom(), 50);
+  }
+
+  formatAction(entry: ActivityEntry): string {
+    const map: Record<string, string> = {
+      'room.status_changed': '🔄 changed room status',
+      'task.created':        '✅ created a task',
+      'task.status_changed': '🔁 updated task status',
+      'task.deleted':        '🗑️ deleted a task',
+    };
+    return map[entry.action] ?? entry.action;
   }
 
   async sendMessage(): Promise<void> {

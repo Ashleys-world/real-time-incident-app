@@ -1,0 +1,71 @@
+﻿<div class="task-board">
+  <!-- Header -->
+  <div class="board-header">
+    <h3>Task Board</h3>
+    <button *ngIf="canEdit" class="btn-primary btn-sm" (click)="showCreateForm.set(!showCreateForm())">
+      {{ showCreateForm() ? 'Cancel' : '+ Add Task' }}
+    </button>
+  </div>
+
+  <!-- Create form -->
+  <div class="create-task-form card" *ngIf="showCreateForm()">
+    <h4>New Task</h4>
+    <div class="form-row">
+      <input [(ngModel)]="newTitle" placeholder="Task title *" class="input" />
+    </div>
+    <div class="form-row">
+      <textarea [(ngModel)]="newDescription" placeholder="Description (optional)" class="input" rows="2"></textarea>
+    </div>
+    <div class="form-row form-row--split">
+      <select [(ngModel)]="newPriority" class="input">
+        <option *ngFor="let p of priorities" [value]="p">{{ p }}</option>
+      </select>
+      <select [(ngModel)]="newAssigneeId" class="input">
+        <option value="">Unassigned</option>
+        <option *ngFor="let m of members" [value]="m.userId">{{ m.displayName }}</option>
+      </select>
+      <input type="datetime-local" [(ngModel)]="newDueAt" class="input" />
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary btn-sm" (click)="createTask()" [disabled]="creating() || !newTitle.trim()">
+        {{ creating() ? 'Creating...' : 'Create Task' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Kanban columns -->
+  <div class="kanban">
+    <div class="column" *ngFor="let col of columns">
+      <div class="column__header" [style.border-top-color]="col.color">
+        <span class="column__title">{{ col.label }}</span>
+        <span class="column__count">{{ tasksForColumn(col.status).length }}</span>
+      </div>
+
+      <div class="column__cards">
+        <div class="task-card" *ngFor="let task of tasksForColumn(col.status)">
+          <div class="task-card__header">
+            <span class="task-card__title">{{ task.title }}</span>
+            <span class="badge" [ngClass]="priorityClass(task.priority)">{{ task.priority }}</span>
+          </div>
+          <p class="task-card__desc" *ngIf="task.description">{{ task.description }}</p>
+          <div class="task-card__meta">
+            <span class="task-card__assignee" *ngIf="task.assigneeDisplayName">&#128100; {{ task.assigneeDisplayName }}</span>
+            <span class="task-card__due" *ngIf="task.dueAt">&#128197; {{ task.dueAt | date:'MMM d' }}</span>
+          </div>
+          <div class="task-card__actions" *ngIf="canEdit">
+            <ng-container *ngFor="let col2 of columns">
+              <button *ngIf="col2.status !== col.status"
+                      class="btn-link btn-xs"
+                      (click)="moveTask(task, col2.status)">
+                &rarr; {{ col2.label }}
+              </button>
+            </ng-container>
+            <button class="btn-link btn-xs btn-danger" (click)="deleteTask(task)">Delete</button>
+          </div>
+        </div>
+
+        <div class="column__empty" *ngIf="tasksForColumn(col.status).length === 0">No tasks</div>
+      </div>
+    </div>
+  </div>
+</div>

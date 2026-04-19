@@ -3,7 +3,7 @@ import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
-import { ChatMessage, OnlineUser } from '../models/models';
+import { ChatMessage, OnlineUser, Task, ActivityEntry } from '../models/models';
 
 export interface TypingEvent { userId: string; displayName: string; }
 export interface StatusChangedEvent { roomId: string; newStatus: string; changedBy: { userId: string; displayName: string }; }
@@ -20,6 +20,9 @@ export class SignalRService implements OnDestroy {
   readonly userStoppedTyping$ = new Subject<{ userId: string }>();
   readonly presenceUpdated$ = new Subject<{ onlineUsers: OnlineUser[] }>();
   readonly roomStatusChanged$ = new Subject<StatusChangedEvent>();
+  readonly taskUpdated$ = new Subject<Task>();
+  readonly taskDeleted$ = new Subject<{ taskId: string }>();
+  readonly activityLogged$ = new Subject<ActivityEntry>();
   readonly error$ = new Subject<string>();
 
   constructor(private auth: AuthService) {}
@@ -68,6 +71,10 @@ export class SignalRService implements OnDestroy {
     await this.connection?.invoke('StopTyping', roomId);
   }
 
+  async updateTaskStatus(roomId: string, taskId: string, newStatus: string): Promise<void> {
+    await this.connection?.invoke('UpdateTaskStatus', roomId, taskId, newStatus);
+  }
+
   private registerHandlers(): void {
     if (!this.connection) return;
 
@@ -91,6 +98,15 @@ export class SignalRService implements OnDestroy {
 
     this.connection.on('RoomStatusChanged', (evt: StatusChangedEvent) =>
       this.roomStatusChanged$.next(evt));
+
+    this.connection.on('TaskUpdated', (task: Task) =>
+      this.taskUpdated$.next(task));
+
+    this.connection.on('TaskDeleted', (evt: { taskId: string }) =>
+      this.taskDeleted$.next(evt));
+
+    this.connection.on('ActivityLogged', (entry: ActivityEntry) =>
+      this.activityLogged$.next(entry));
 
     this.connection.on('Error', (msg: string) =>
       this.error$.next(msg));

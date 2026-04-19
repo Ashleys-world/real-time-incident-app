@@ -169,6 +169,56 @@ public class IncidentHub : Hub
         });
     }
 
+    /// <summary>Update a task's status and broadcast to the room.</summary>
+    public async Task UpdateTaskStatus(string roomId, string taskId, string newStatus)
+    {
+        var validStatuses = new[] { "Todo", "InProgress", "Blocked", "Done" };
+        if (!validStatuses.Contains(newStatus))
+            throw new HubException("Invalid task status.");
+
+        var userId = GetUserId();
+        var parsedRoomId = Guid.Parse(roomId);
+        var parsedTaskId = Guid.Parse(taskId);
+
+        var member = await _db.RoomMembers.FindAsync(parsedRoomId, Guid.Parse(userId));
+        if (member is null || member.Role == "viewer")
+            throw new HubException("Not authorised to update tasks.");
+
+        var task = await _db.Tasks
+            .Include(t => t.Assignee)
+            .Include(t => t.CreatedBy)
+            .FirstOrDefaultAsync(t => t.Id == parsedTaskId && t.RoomId == parsedRoomId);
+
+        if (task is null) throw new HubException("Task not found.");
+
+        var previousStatus = task.Status;
+        task.Status = newStatus;
+        task.UpdatedAt = DateTime.UtcNow;
+
+        _db.ActivityLogs.Add(new ActivityLog
+        {
+            RoomId = parsedRoomId,
+            ActorId = Guid.Parse(userId),
+            Action = "task.status_changed",
+            TargetType = "task",
+            TargetId = parsedTaskId,
+            Payload = $"{{\"title\":\"{task.Title}\",\"from\":\"{previousStatus}\",\"to\":\"{newStatus}\"}}"
+        });
+
+        await _db.SaveChangesAsync();
+
+        var dto = new
+        {
+            task.Id, task.RoomId, task.Title, task.Description,
+            task.Status, task.Priority,
+            task.AssigneeId, AssigneeDisplayName = task.Assignee?.DisplayName,
+            task.CreatedById, CreatedByDisplayName = task.CreatedBy?.DisplayName ?? "",
+            task.DueAt, task.CreatedAt, task.UpdatedAt
+        };
+
+        await Clients.Group($"room:{roomId}").SendAsync("TaskUpdated", dto);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────
 
     private string GetUserId() =>

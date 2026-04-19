@@ -59,22 +59,80 @@
 .empty-presence { color: #64748b; font-size: 0.8rem; }
 
 // ── Chat ──────────────────────────────────────────────────────────────────────
-.chat-area {
+.main-area {
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
-.chat-header {
-  padding: 0.9rem 1.5rem;
+// ── Tab bar ───────────────────────────────────────────────────────────────────
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
   background: #1e293b;
   border-bottom: 1px solid #334155;
-  font-weight: 600;
-  font-size: 0.95rem;
   flex-shrink: 0;
+  padding: 0 1.5rem;
 }
 
-.error-msg { color: #fca5a5; font-size: 0.85rem; margin-top: 0.25rem; }
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: color 0.15s, border-color 0.15s;
+
+  &:hover { color: #e2e8f0; }
+  &.active { color: #38bdf8; border-bottom-color: #38bdf8; }
+}
+
+.tab-badge {
+  background: #334155;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  padding: .1rem .4rem;
+  font-weight: 600;
+}
+
+.error-msg { color: #fca5a5; font-size: 0.85rem; margin-left: auto; }
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem;
+
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+}
+
+// ── Activity feed ─────────────────────────────────────────────────────────────
+.activity-feed { display: flex; flex-direction: column; gap: .5rem; }
+
+.activity-entry {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  font-size: .83rem;
+  padding: .5rem .75rem;
+  background: #1e293b;
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.activity-actor { font-weight: 600; color: #38bdf8; }
+.activity-action { color: #cbd5e1; }
+.activity-time { color: #64748b; font-size: .75rem; margin-left: auto; }
+
+.empty-state { color: #64748b; font-size: .875rem; text-align: center; padding: 2rem 0; }
 
 .messages-container {
   flex: 1;
