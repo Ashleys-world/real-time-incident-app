@@ -2,7 +2,7 @@ name: Deploy Backend
 
 on:
   push:
-    branches: [main]
+    branches: [main, feat/deploy-phase-2]
     paths:
       - 'real-time-incident-backend/**'
       - '.github/workflows/deploy-backend.yml'
