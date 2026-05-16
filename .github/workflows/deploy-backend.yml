@@ -26,18 +26,6 @@ jobs:
       - name: Build
         run: dotnet build real-time-incident-backend/IncidentApp.Api/IncidentApp.Api.csproj --configuration Release --no-restore
 
-      - name: Install EF Core tools
-        run: dotnet tool install --global dotnet-ef
-
-      - name: Run database migrations
-        run: |
-          dotnet ef database update \
-            --project real-time-incident-backend/IncidentApp.Infrastructure/IncidentApp.Infrastructure.csproj \
-            --startup-project real-time-incident-backend/IncidentApp.Api/IncidentApp.Api.csproj \
-            --no-build
-        env:
-          ConnectionStrings__DefaultConnection: ${{ secrets.DB_CONNECTION_STRING }}
-
       - name: Publish
         run: dotnet publish real-time-incident-backend/IncidentApp.Api/IncidentApp.Api.csproj --configuration Release --no-build --output ./publish
 
