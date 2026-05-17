@@ -1,13 +1,13 @@
-<div class="room-layout">
+﻿<div class="room-layout">
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <a class="back-link" routerLink="/rooms">← Rooms</a>
+      <a class="back-link" routerLink="/rooms">Back to Rooms</a>
     </div>
 
-    <div *ngIf="room() as r" class="room-info">
+    <div class="room-info" *ngIf="room() as r">
       <div class="room-meta">
-        <span class="sev-badge sev-{{r.severity.toLowerCase()}}">{{ r.severity }}</span>
+        <span class="sev-badge" [ngClass]="'sev-' + r.severity.toLowerCase()">{{ r.severity }}</span>
         <span class="status-badge">{{ r.status }}</span>
       </div>
       <h2 class="room-name">{{ r.title }}</h2>
@@ -27,57 +27,76 @@
     </div>
   </aside>
 
-  <!-- Chat area -->
-  <main class="chat-area">
-    <div class="chat-header">
-      <span *ngIf="room() as r">{{ r.title }}</span>
+  <!-- Main content -->
+  <main class="main-area">
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn" [class.active]="activeTab() === 'chat'" (click)="setTab('chat')">Chat</button>
+      <button class="tab-btn" [class.active]="activeTab() === 'tasks'" (click)="setTab('tasks')">
+        Tasks <span class="tab-badge" *ngIf="tasks().length > 0">{{ tasks().length }}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab() === 'activity'" (click)="setTab('activity')">Activity</button>
       <div class="error-msg" *ngIf="error()">{{ error() }}</div>
     </div>
 
-    <div class="messages-container">
-      <div class="loading-msg" *ngIf="loading()">Loading history...</div>
+    <!-- CHAT TAB -->
+    <ng-container *ngIf="activeTab() === 'chat'">
+      <div class="messages-container">
+        <div class="loading-msg" *ngIf="loading()">Loading history...</div>
 
-      <ng-container *ngFor="let msg of messages()">
-        <!-- System message -->
-        <div *ngIf="msg.messageType === 'system'" class="system-message">
-          {{ msg.content }}
-        </div>
-
-        <!-- User message -->
-        <div *ngIf="msg.messageType === 'user'" class="message-row"
-             [class.own]="isOwnMessage(msg)">
-          <div class="message-bubble">
-            <div class="message-meta">
-              <span class="sender">{{ isOwnMessage(msg) ? 'You' : msg.senderDisplayName }}</span>
-              <span class="time">{{ msg.sentAt | date:'HH:mm' }}</span>
+        <ng-container *ngFor="let msg of messages()">
+          <div *ngIf="msg.messageType === 'system'" class="system-message">{{ msg.content }}</div>
+          <div *ngIf="msg.messageType === 'user'" class="message-row" [class.own]="isOwnMessage(msg)">
+            <div class="message-bubble">
+              <div class="message-meta">
+                <span class="sender">{{ isOwnMessage(msg) ? 'You' : msg.senderDisplayName }}</span>
+                <span class="time">{{ msg.sentAt | date:'HH:mm' }}</span>
+              </div>
+              <p class="message-content">{{ msg.content }}</p>
             </div>
-            <p class="message-content">{{ msg.content }}</p>
           </div>
-        </div>
-      </ng-container>
+        </ng-container>
 
-      <!-- Typing indicator -->
-      <div *ngIf="typingUsers().length > 0" class="typing-indicator">
-        <span class="dots"><span></span><span></span><span></span></span>
-        {{ typingUsers().join(', ') }} {{ typingUsers().length === 1 ? 'is' : 'are' }} typing...
+        <div *ngIf="typingUsers().length > 0" class="typing-indicator">
+          <span class="dots"><span></span><span></span><span></span></span>
+          {{ typingUsers().join(', ') }} {{ typingUsers().length === 1 ? 'is' : 'are' }} typing...
+        </div>
+
+        <div #chatEnd></div>
       </div>
 
-      <div #chatEnd></div>
+      <div class="message-input-row" *ngIf="canEdit()">
+        <textarea
+          [(ngModel)]="messageInput"
+          (input)="onTyping()"
+          (keydown)="onKeydown($event)"
+          placeholder="Type a message... (Enter to send)"
+          rows="1"
+          class="message-input"
+        ></textarea>
+        <button class="send-btn" (click)="sendMessage()" [disabled]="!messageInput.trim()">Send</button>
+      </div>
+    </ng-container>
+
+    <!-- TASKS TAB -->
+    <div class="tab-content" *ngIf="activeTab() === 'tasks'">
+      <app-task-board
+        #taskBoard
+        [roomId]="roomId"
+        [tasks]="tasks()"
+        [members]="room()?.members ?? []"
+        [canEdit]="canEdit()"
+      ></app-task-board>
     </div>
 
-    <!-- Message input -->
-    <div class="message-input-row">
-      <textarea
-        [(ngModel)]="messageInput"
-        (input)="onTyping()"
-        (keydown)="onKeydown($event)"
-        placeholder="Type a message... (Enter to send)"
-        rows="1"
-        class="message-input"
-      ></textarea>
-      <button class="send-btn" (click)="sendMessage()" [disabled]="!messageInput.trim()">
-        Send
-      </button>
+    <!-- ACTIVITY TAB -->
+    <div class="tab-content activity-feed" *ngIf="activeTab() === 'activity'">
+      <p class="empty-state" *ngIf="activity().length === 0">No activity yet.</p>
+      <div class="activity-entry" *ngFor="let entry of activity()">
+        <span class="activity-actor">{{ entry.actorDisplayName }}</span>
+        <span class="activity-action">{{ formatAction(entry) }}</span>
+        <span class="activity-time">{{ entry.occurredAt | date:'MMM d, HH:mm' }}</span>
+      </div>
     </div>
   </main>
 </div>

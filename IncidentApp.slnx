@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="real-time-incident-backend/IncidentApp.Domain/IncidentApp.Domain.csproj" />
+  <Project Path="real-time-incident-backend/IncidentApp.Infrastructure/IncidentApp.Infrastructure.csproj" />
+  <Project Path="real-time-incident-backend/IncidentApp.Api/IncidentApp.Api.csproj" />
+</Solution>

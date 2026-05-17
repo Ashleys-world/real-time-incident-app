@@ -19,13 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="IncidentApp.Domain\**;IncidentApp.Infrastructure\**" />
-    <EmbeddedResource Remove="IncidentApp.Domain\**;IncidentApp.Infrastructure\**" />
-    <None Remove="IncidentApp.Domain\**;IncidentApp.Infrastructure\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="IncidentApp.Infrastructure\IncidentApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\IncidentApp.Infrastructure\IncidentApp.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

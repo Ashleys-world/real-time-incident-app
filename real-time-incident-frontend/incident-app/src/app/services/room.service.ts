@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { Room, RoomDetail, RoomMember, ChatMessage, ActivityEntry } from '../models/models';
+import { Room, RoomDetail, RoomMember, ChatMessage, ActivityEntry, Task, CreateTaskRequest, UpdateTaskRequest } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class RoomService {
@@ -42,5 +42,23 @@ export class RoomService {
   getActivity(id: string, page = 1): Observable<ActivityEntry[]> {
     const params = new HttpParams().set('page', page);
     return this.http.get<ActivityEntry[]>(`${this.base}/rooms/${id}/activity`, { params });
+  }
+
+  // ── Tasks ──────────────────────────────────────────────────────────────
+
+  getTasks(roomId: string): Observable<Task[]> {
+    return this.http.get<Task[]>(`${this.base}/rooms/${roomId}/tasks`);
+  }
+
+  createTask(roomId: string, request: CreateTaskRequest): Observable<Task> {
+    return this.http.post<Task>(`${this.base}/rooms/${roomId}/tasks`, request);
+  }
+
+  updateTask(roomId: string, taskId: string, request: UpdateTaskRequest): Observable<Task> {
+    return this.http.put<Task>(`${this.base}/rooms/${roomId}/tasks/${taskId}`, request);
+  }
+
+  deleteTask(roomId: string, taskId: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/rooms/${roomId}/tasks/${taskId}`);
   }
 }

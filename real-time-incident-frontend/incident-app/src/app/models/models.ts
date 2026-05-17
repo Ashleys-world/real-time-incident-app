@@ -61,3 +61,42 @@ export interface ActivityEntry {
   payload?: string;
   occurredAt: string;
 }
+
+export interface Task {
+  id: string;
+  roomId: string;
+  title: string;
+  description?: string;
+  status: 'Todo' | 'InProgress' | 'Blocked' | 'Done';
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  assigneeId?: string;
+  assigneeDisplayName?: string;
+  createdById: string;
+  createdByDisplayName: string;
+  dueAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description?: string;
+  priority: string;
+  assigneeId?: string;
+  dueAt?: string;
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  status?: string;
+  priority?: string;
+  assigneeId?: string;
+  dueAt?: string;
+}
+
+export interface Toast {
+  id: string;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+}

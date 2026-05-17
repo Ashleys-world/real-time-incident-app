@@ -38,3 +38,35 @@ public record MessageDto(
     DateTime SentAt);
 
 public record SendMessageRequest(Guid ClientMessageId, string Content);
+
+// ── Task DTOs ──────────────────────────────────────────────────────────────
+
+public record CreateTaskRequest(
+    string Title,
+    string? Description,
+    string Priority,
+    Guid? AssigneeId,
+    DateTime? DueAt);
+
+public record UpdateTaskRequest(
+    string? Title,
+    string? Description,
+    string? Status,
+    string? Priority,
+    Guid? AssigneeId,
+    DateTime? DueAt);
+
+public record TaskDto(
+    Guid Id,
+    Guid RoomId,
+    string Title,
+    string? Description,
+    string Status,
+    string Priority,
+    Guid? AssigneeId,
+    string? AssigneeDisplayName,
+    Guid CreatedById,
+    string CreatedByDisplayName,
+    DateTime? DueAt,
+    DateTime CreatedAt,
+    DateTime UpdatedAt);
